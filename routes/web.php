@@ -1,3 +1,5 @@
+
+
 <?php
 
 use Illuminate\Support\Facades\Route;
@@ -5,6 +7,21 @@ use App\Http\Controllers\PiutangController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
+
+
+Route::get('home', [PiutangController::class, 'dashboard']);
+Route::resource('piutang', PiutangController::class);
+Route::get('laporan', [PiutangController::class, 'laporan']);
+Route::get('/laporan-piutang-data', [PiutangController::class, 'data']);
+// Route::get('/profile', [PiutangController::class, 'profile'])->name('profile');
+// Route::get('/profile/edit', [PiutangController::class, 'editProfile'])->name('profile.edit');
+// Route::put('/profile/update', [PiutangController::class, 'updateProfile'])->name('profile.update');
+Route::patch('/piutang/{id}/lunas', [PiutangController::class, 'markLunas'])->name('piutang.lunas');
+Route::get('/laporan-piutang-pdf', [PiutangController::class, 'exportPdf']);
+Route::get('/notifikasi', [PiutangController::class, 'notifikasi'])->name('notifikasi');
+
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -25,7 +42,7 @@ Route::middleware(['guest'])->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| EMAIL VERIFICATION
+| EMAIL VERIFICATION (WAJIB)
 |--------------------------------------------------------------------------
 */
 
@@ -51,7 +68,7 @@ Route::post('/email/verification-notification', function (Request $request) {
 
 /*
 |--------------------------------------------------------------------------
-| AUTH + VERIFIED
+| SUDAH LOGIN + SUDAH VERIFIKASI
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -59,25 +76,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // LOGOUT
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // DASHBOARD (HOME)
-    Route::get('/', [PiutangController::class, 'index'])->name('home');
+    // DASHBOARD / HALAMAN UTAMA
+    // Route::get('/', [PiutangController::class, 'index'])->name('piutang.index');
+    Route::get('/', function () {
+    return redirect()->route('piutang.index');
+})->name('home');
 
-    // RESOURCE PIUTANG (SUDAH ADA piutang.index di sini)
-    Route::resource('piutang', PiutangController::class);
-
-    // TAMBAHAN FITUR PIUTANG
-    Route::patch('/piutang/{id}/lunas', [PiutangController::class, 'markLunas'])->name('piutang.lunas');
-
-    // LAPORAN
-    Route::get('/laporan', [PiutangController::class, 'laporan'])->name('laporan');
-    Route::get('/laporan-piutang-data', [PiutangController::class, 'data'])->name('laporan.data');
-    Route::get('/laporan-piutang-pdf', [PiutangController::class, 'exportPdf'])->name('laporan.pdf');
-
-    // NOTIFIKASI
-    Route::get('/notifikasi', [PiutangController::class, 'notifikasi'])->name('notifikasi');
-
-    // PROFILE (HANYA SEKALI, TIDAK DUPLIKAT)
+    // PROFILE
     Route::get('/profile', [PiutangController::class, 'profile'])->name('profile');
     Route::get('/profile/edit', [PiutangController::class, 'editProfile'])->name('profile.edit');
     Route::put('/profile/update', [PiutangController::class, 'updateProfile'])->name('profile.update');
 });
+
