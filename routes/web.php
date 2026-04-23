@@ -6,21 +6,6 @@ use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
-
-Route::get('home', [PiutangController::class, 'dashboard']);
-Route::resource('piutang', PiutangController::class);
-Route::get('laporan', [PiutangController::class, 'laporan']);
-Route::get('/laporan-piutang-data', [PiutangController::class, 'data']);
-Route::get('/profile', [PiutangController::class, 'profile'])->name('profile');
-Route::get('/profile/edit', [PiutangController::class, 'editProfile'])->name('profile.edit');
-Route::put('/profile/update', [PiutangController::class, 'updateProfile'])->name('profile.update');
-Route::patch('/piutang/{id}/lunas', [PiutangController::class, 'markLunas'])->name('piutang.lunas');
-Route::get('/laporan-piutang-pdf', [PiutangController::class, 'exportPdf']);
-Route::get('/notifikasi', [PiutangController::class, 'notifikasi'])->name('notifikasi');
-
-
-
-
 /*
 |--------------------------------------------------------------------------
 | GUEST (BELUM LOGIN)
@@ -40,7 +25,7 @@ Route::middleware(['guest'])->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| EMAIL VERIFICATION (WAJIB)
+| EMAIL VERIFICATION
 |--------------------------------------------------------------------------
 */
 
@@ -66,7 +51,7 @@ Route::post('/email/verification-notification', function (Request $request) {
 
 /*
 |--------------------------------------------------------------------------
-| SUDAH LOGIN + SUDAH VERIFIKASI
+| AUTH + VERIFIED
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -74,44 +59,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // LOGOUT
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // DASHBOARD / HALAMAN UTAMA
-    Route::get('/', [PiutangController::class, 'index'])->name('piutang.index');
+    // DASHBOARD (HOME)
+    Route::get('/', [PiutangController::class, 'index'])->name('home');
 
-    // PROFILE
+    // RESOURCE PIUTANG (SUDAH ADA piutang.index di sini)
+    Route::resource('piutang', PiutangController::class);
+
+    // TAMBAHAN FITUR PIUTANG
+    Route::patch('/piutang/{id}/lunas', [PiutangController::class, 'markLunas'])->name('piutang.lunas');
+
+    // LAPORAN
+    Route::get('/laporan', [PiutangController::class, 'laporan'])->name('laporan');
+    Route::get('/laporan-piutang-data', [PiutangController::class, 'data'])->name('laporan.data');
+    Route::get('/laporan-piutang-pdf', [PiutangController::class, 'exportPdf'])->name('laporan.pdf');
+
+    // NOTIFIKASI
+    Route::get('/notifikasi', [PiutangController::class, 'notifikasi'])->name('notifikasi');
+
+    // PROFILE (HANYA SEKALI, TIDAK DUPLIKAT)
     Route::get('/profile', [PiutangController::class, 'profile'])->name('profile');
     Route::get('/profile/edit', [PiutangController::class, 'editProfile'])->name('profile.edit');
     Route::put('/profile/update', [PiutangController::class, 'updateProfile'])->name('profile.update');
 });
-/*
-|--------------------------------------------------------------------------
-| GUEST (BELUM LOGIN)
-|--------------------------------------------------------------------------
-*/
-// Route::middleware(['guest'])->group(function () {
-
-//     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-//     Route::post('/login', [AuthController::class, 'login']);
-
-//     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-//     Route::post('/register', [AuthController::class, 'register']);
-//     Route::post('/register', [AuthController::class, 'register'])->name('register');
-// });
-
-
-/*
-|--------------------------------------------------------------------------
-| SUDAH LOGIN
-|--------------------------------------------------------------------------
-*/
-// Route::middleware(['auth'])->group(function () {
-
-//     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-//     // HALAMAN UTAMA
-//     Route::get('/', [PiutangController::class, 'index'])->name('piutang.index');
-
-//     // PROFILE (yang kamu buat tadi)
-//     Route::get('/profile', [PiutangController::class, 'profile'])->name('profile');
-//     Route::get('/profile/edit', [PiutangController::class, 'editProfile'])->name('profile.edit');
-//     Route::put('/profile/update', [PiutangController::class, 'updateProfile'])->name('profile.update');
-// });
