@@ -27,10 +27,12 @@ Route::middleware('guest')->group(function () {
 |--------------------------------------------------------------------------
 */
 
+// halaman notice verifikasi email
 Route::get('/email/verify', function () {
     return view('auth.verify-email');
 })->middleware('auth')->name('verification.notice');
 
+// klik link email
 Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
     $request->fulfill();
 
@@ -38,35 +40,39 @@ Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $requ
         ->with('success', 'Email berhasil diverifikasi');
 })->middleware(['auth', 'signed'])->name('verification.verify');
 
+// kirim ulang email verifikasi
 Route::post('/email/verification-notification', function (Request $request) {
     $request->user()->sendEmailVerificationNotification();
 
     return back()->with('success', 'Link verifikasi dikirim ulang');
 })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
 
-
 /*
 |--------------------------------------------------------------------------
-| AUTHENTICATED ROUTES (LOGIN + VERIFIED)
+| AUTH + VERIFIED ROUTES
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    // LOGOUT
+    /*
+    |--------------------------
+    | LOGOUT
+    |--------------------------
+    */
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     /*
-    |-----------------------------
+    |--------------------------
     | DASHBOARD
-    |-----------------------------
+    |--------------------------
     */
     Route::get('/', [PiutangController::class, 'dashboard'])->name('home');
     Route::get('/home', [PiutangController::class, 'dashboard']);
 
     /*
-    |-----------------------------
-    | PIUTANG
-    |-----------------------------
+    |--------------------------
+    | PIUTANG (CRUD)
+    |--------------------------
     */
     Route::resource('piutang', PiutangController::class)->except(['show']);
 
@@ -74,27 +80,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('piutang.lunas');
 
     /*
-    |-----------------------------
+    |--------------------------
     | LAPORAN
-    |-----------------------------
+    |--------------------------
     */
     Route::get('/laporan', [PiutangController::class, 'laporan'])->name('laporan');
     Route::get('/laporan-data', [PiutangController::class, 'data']);
     Route::get('/laporan-pdf', [PiutangController::class, 'exportPdf']);
 
     /*
-    |-----------------------------
+    |--------------------------
     | PROFILE
-    |-----------------------------
+    |--------------------------
     */
     Route::get('/profile', [PiutangController::class, 'profile'])->name('profile');
     Route::get('/profile/edit', [PiutangController::class, 'editProfile'])->name('profile.edit');
     Route::put('/profile/update', [PiutangController::class, 'updateProfile'])->name('profile.update');
 
     /*
-    |-----------------------------
+    |--------------------------
     | NOTIFIKASI
-    |-----------------------------
+    |--------------------------
     */
     Route::get('/notifikasi', [PiutangController::class, 'notifikasi'])->name('notifikasi');
 });
