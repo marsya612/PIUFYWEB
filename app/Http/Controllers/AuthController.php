@@ -17,6 +17,22 @@ class AuthController extends Controller
     }
 
     // 🔹 PROSES LOGIN
+    // public function login(Request $request)
+    // {
+    //     $credentials = $request->validate([
+    //         'email' => 'required|email',
+    //         'password' => 'required',
+    //     ]);
+
+    //     if (Auth::attempt($credentials, $request->remember)) {
+    //         $request->session()->regenerate();
+    //         return redirect()->route('piutang.index');
+    //     }
+
+    //     return back()->withErrors([
+    //         'email' => 'Email atau password salah',
+    //     ])->withInput();
+    // }
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -52,34 +68,84 @@ class AuthController extends Controller
     }
 
     // 🔹 PROSES REGISTER (FIXED)
-    public function register(Request $request)
-    {
-        $request->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:users,email',
-            'phone' => 'required',
-            'jabatan' => 'required',
-            'password' => 'required|confirmed|min:6',
-        ]);
+    // public function register(Request $request)
+    // {
 
-        // ✅ SIMPAN USER (PASSWORD DI-HASH)
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'jabatan' => $request->jabatan,
-            'divisi' => 'Keuangan',
-            'password' => Hash::make($request->password),
-        ]);
+    //     $request->validate([
+    //         'name' => 'required|string|max:255',
+    //         'email' => 'required|email|unique:users,email',
+    //         'phone' => 'required',
+    //         'divisi' => 'required',
+    //         'jabatan' => 'required',
+    //         'password' => 'required|min:6|confirmed',
+    //     ]);
 
-        // ✅ KIRIM EMAIL VERIFIKASI
-        event(new Registered($user));
+    //     $user = User::create([
+    //         'name'     => $request->name,
+    //         'email'    => $request->email,
+    //         'password' => Hash::make($request->password),
+    //         'phone'    => $request->phone,
+    //         'jabatan'  => $request->jabatan,
+    //         'divisi'   => 'Keuangan', // 🔥 hardcode di sini
+    //         'photo'    => $photoPath,
+    //     ]);
 
-        // ❌ JANGAN LOGIN DULU (hindari 419 & bug session)
+    //     return redirect()->route('login')->with('success', 'Register berhasil');
+    // }
+    // public function register(Request $request)
+    // {
+    //     $request->validate([
+    //         'name' => 'required',
+    //         'email' => 'required|email|unique:users',
+    //         'phone' => 'required',
+    //         'jabatan' => 'required',
+    //         'password' => 'required|confirmed|min:6',
+    //     ]);
 
-        return redirect()->route('login')
-            ->with('success', 'Registrasi berhasil! Silakan cek email untuk verifikasi.');
-    }
+    //     User::create([
+    //         'name' => $request->name,
+    //         'email' => $request->email,
+    //         'phone' => $request->phone,
+    //         'divisi' => 'Keuangan', // default
+    //         'jabatan' => $request->jabatan,
+    //         'password' => bcrypt($request->password),
+    //     ]);
+
+    //     // 🔥 redirect + kirim pesan sukses
+    //     // return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login.');
+    //     event(new Registered($user));
+
+    //     return redirect()->route('verification.notice')
+    //         ->with('success', 'Silakan cek email untuk verifikasi akun');
+    // }
+public function register(Request $request)
+{
+    $request->validate([
+        'name' => 'required',
+        'email' => 'required|email|unique:users,email',
+        'phone' => 'required',
+        'jabatan' => 'required',
+        'password' => 'required|confirmed|min:6',
+    ]);
+
+    $user = User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'phone' => $request->phone,
+        'jabatan' => $request->jabatan,
+        'divisi' => 'Keuangan',
+        'password' => $request->password,
+    ]);
+
+    // ✅ LOGIN DULU
+    Auth::login($user);
+
+    // ✅ KIRIM EMAIL
+    event(new Registered($user));
+
+    return redirect()->route('verification.notice')
+        ->with('success', 'Silakan cek email untuk verifikasi akun');
+}
 
     // 🔹 LOGOUT
     public function logout(Request $request)
